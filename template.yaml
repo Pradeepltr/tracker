@@ -1,0 +1,166 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  backend
+
+  Sample SAM Template for backend
+  
+
+Globals:
+  Function:
+    Timeout: 3
+    Runtime: nodejs14.x
+    Architectures:
+      - arm64
+
+Resources:
+  ComputeServices:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: resourceTracker/computeServices/
+      Handler: index.handler
+      Events:
+        Trigger:
+          Type: CloudWatchEvent
+          Properties:
+            Pattern:
+              source:
+                - aws.lambda
+              detail-type:
+                - AWS API Call via CloudTrail
+              detail:
+                eventSource:
+                  - lambda.amazonaws.com
+                eventName:
+                  - CreateFunction20150331
+                  - DeleteFunction20150331
+      Policies:
+         - DynamoDBCrudPolicy:
+             TableName: !Ref AWSResourceTracker
+         - AmazonDynamoDBFullAccess
+         - AWSLambda_FullAccess
+
+  DatabaseServices:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: resourceTracker/databaseServices/
+      Handler: index.handler
+      Events:
+        Trigger:
+          Type: CloudWatchEvent
+          Properties:
+            Pattern:
+              source:
+                - aws.dynamodb
+              detail-type:
+                - AWS API Call via CloudTrail
+              detail:
+                eventSource:
+                  - dynamodb.amazonaws.com
+                eventName:
+                  - CreateTable
+                  - DeleteTable
+      Policies:
+         - DynamoDBCrudPolicy:
+             TableName: !Ref AWSResourceTracker
+         - AmazonDynamoDBFullAccess
+  
+  NetworkingAndContentDelivery:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: resourceTracker/networkingAndContentDeliveryServices/
+      Handler: index.handler
+      Events:
+        Trigger:
+          Type: CloudWatchEvent
+          Properties:
+            Pattern:
+              source:
+                - aws.apigateway
+              detail-type:
+                - AWS API Call via CloudTrail
+              detail:
+                eventSource:
+                  - apigateway.amazonaws.com
+                eventName:
+                  - DeleteRestApi
+                  - CreateRestApi
+                  - ImportRestApi
+      Policies:
+         - DynamoDBCrudPolicy:
+             TableName: !Ref AWSResourceTracker
+         - AmazonDynamoDBFullAccess
+         - Statement:
+            Sid: APIGateWayPolici
+            Effect: Allow
+            Action: apigateway:*
+            Resource: '*'
+
+  StorageServices:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: resourceTracker/storageServices/
+      Handler: index.handler
+      Events:
+        Trigger:
+          Type: CloudWatchEvent
+          Properties:
+            Pattern:
+              source:
+                - aws.s3
+              detail-type:
+                - AWS API Call via CloudTrail
+              detail:
+                eventSource:
+                  - s3.amazonaws.com
+                eventName:
+                  - CreateBucket
+                  - DeleteBucket
+      Policies:
+         - DynamoDBCrudPolicy:
+             TableName: !Ref AWSResourceTracker
+         - AmazonDynamoDBFullAccess
+         - AmazonS3FullAccess
+
+  
+  
+  
+  
+  AWSResourceTracker:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: AWSResourceTracker
+      AttributeDefinitions:
+        - AttributeName: userName
+          AttributeType: S
+        - AttributeName: userType
+          AttributeType: S
+      KeySchema:
+       - AttributeName: userName
+         KeyType: HASH
+       - AttributeName: userType
+         KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+      
+
+
+  
+
+  
+             
+        
+  
+
+
+
+
+  
+  
+  
+
+  
+
+
+
+
+
