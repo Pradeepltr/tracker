@@ -6,6 +6,6 @@ stack_name = "aws-resource-tracker"
 s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1apz8qcg4hd5s"
 s3_prefix = "aws-resource-tracker"
 region = "ap-south-1"
-profile = "pradeep"
+##profile = "pradeep"
 capabilities = "CAPABILITY_IAM"
 image_repositories = []
